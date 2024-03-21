@@ -12,21 +12,22 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(ggplot2)
-df <- read_delim("./parcours.csv",delim=";")
+data <- read_delim("./parcoursup.csv",delim=";")
 
 # Récupération des colonnes
-data <- df %>%
+df <- data %>%
   select(
-    cod_uai, contrat_etab,    region_etab_aff,    acad_mies,    select_form,    
-    fili,    form_lib_voe_acc,    fil_lib_voe_acc,    capa_fin,    voe_tot,    
-    voe_tot_f,    nb_voe_pp,    nb_voe_pp_bg,    nb_voe_pp_bt,    nb_voe_pp_bp,   
-    nb_voe_pp_at,   nb_voe_pc,    nb_voe_pc_bg,    nb_voe_pc_bt,    nb_voe_pc_bp,    
-    nb_voe_pc_at,    prop_tot,    acc_tot,    pct_f
+    cod_uai, contrat_etab,    g_ea_lib_vx,    region_etab_aff,    acad_mies,
+    select_form,    fili,    form_lib_voe_acc,    fil_lib_voe_acc,    capa_fin,
+    voe_tot,    voe_tot_f,    nb_voe_pp,    nb_voe_pp_bg,    nb_voe_pp_bt,
+    nb_voe_pp_bp,    nb_voe_pp_at,   nb_voe_pc,    nb_voe_pc_bg,    nb_voe_pc_bt,
+    nb_voe_pc_bp,    nb_voe_pc_at,    prop_tot,    acc_tot,    pct_f
   )
 # Renommage des colonnes
-colnames(data) <- c(
+colnames(df) <- c(
     "id",
     "statut",
+    "nom établissement",
     "région",
     "ville",
     "selectivité",
