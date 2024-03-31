@@ -35,22 +35,86 @@ colnames(df) <- c(
     "filière",
     "nom de la formation",
     "capacité accueil",
-    "candidats",
-    "candidats filles",
-    "candidats phase principale",
-    "candidats phase pr bac gen",
-    "candidats phase pr bac tech",
-    "candidats phase pr bac pro",
-    "candidats phase pr bac autres spé",
-    "candidats phase complémentaire",
-    "candidats phase comp gen",
-    "candidats phase comp tech",
-    "candidats phase comp pro",
-    "candidats phase comp bac autres spé",
-    "candidats préselectionnés",
-    "candidats admis",
+    "candidatures",
+    "candidatures filles",
+    "candidatures phase principale",
+    "candidatures phase pr bac gen",
+    "candidatures phase pr bac tech",
+    "candidatures phase pr bac pro",
+    "candidatures phase pr bac autres spé",
+    "candidatures phase complémentaire",
+    "candidatures phase comp gen",
+    "candidatures phase comp tech",
+    "candidatures phase comp pro",
+    "candidatures phase comp bac autres spé",
+    "candidatures préselectionnés",
+    "candidatures admis",
     "pourcentage filles admises"
 )
 
-data %>% head(10) # Shows the 10 first lines of this data set
+
+
+# data %>% head(10) # Shows the 10 first lines of this data set
+# candidatures <- df %>%
+#  group_by(région) %>%
+ # summarise(candidats_total = sum(candidats), candidats_admis = sum(`candidats admis`))%>%
+  #          arrange(desc(candidats_total))
+
+#pourcentage_admission <- candidatures %>%
+ # mutate(pourcentage = candidats_admis / candidats_total * 100)
+
+
+#candidatures_par_region <- df %>%
+ # group_by(région) %>%
+  #summarise(candidats_total = sum(candidats))%>%
+   #         arrange(desc(candidats_total))
+
+#admissions_par_region <- df %>%
+ # group_by(région) %>%
+  # summarise(candidats_admis = sum(`candidats admis`))%>%
+    #        arrange(desc(candidats_admis))
+
+
+#merged_data <- merge(candidatures_par_region, admissions_par_region, by = "région")
+
+
+# print(candidatures_par_region)
+# print(admissions_par_region)
+# print(pourcentage_admission)
+
+
+# Graphique pour la répartition des candidatures par région
+# ggplot(candidatures_par_region, aes(x = région, y = candidats_total)) +
+  # geom_bar(stat = "identity", fill = "skyblue", alpha = 0.7) +
+  # labs(title = "Répartition des candidatures par région",
+   #    x = "Région",
+    #   y = "Nombre de candidats") +
+  # theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Graphique pour la répartition des admissions par région
+#ggplot(admissions_par_region, aes(x = région, y = candidats_admis)) +
+ # geom_bar(stat = "identity", fill = "orange", alpha = 0.7) +
+  #labs(title = "Répartition des admissions par région",
+   #    x = "Région",
+    #   y = "Nombre de candidats admis") +
+  # theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Graphique des admissions en fonction des candidatures
+# ggplot(merged_data, aes(x = région)) +
+  # geom_bar(aes(y = candidats_total), stat = "identity", fill = "skyblue", alpha = 0.7, position = "dodge") +
+  # geom_bar(aes(y = candidats_admis), stat = "identity", fill = "orange", alpha = 0.7, position = "dodge") +
+  # labs(title = "Répartition des candidatures et des admissions par région",
+    #   x = "Région",
+     #  y = "Nombre de candidatures/admissions") +
+ # theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Graphique pour la répartition des admissions par région
+# ggplot(pourcentage_admission, aes(x = région, y = candidats_admis)) +
+  # geom_bar(stat = "identity", fill = "orange", alpha = 0.7) +
+  # labs(title = "Répartition des admissions par région",
+    #   x = "Région",
+     #  y = "Nombre de candidats admis") +
+ # theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
 ```
