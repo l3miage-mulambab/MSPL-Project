@@ -160,7 +160,7 @@ barplot <- ggplot(nbEtablissementsParRegion, aes(x = région, y = nb_etablisseme
   geom_hline(yintercept = moyenneNbEtab, color = "red", linetype = "dashed") +
   annotate("text", x = 13, y = moyenneNbEtab, label = paste("µ =", round(moyenneNbEtab)), vjust = -1, color = "red") +
   labs(title = "Nombre d'établissements d'enseignement supérieur par région en France",
-       x = "Région", y = "Nombre de formations") +
+       x = "Région", y = "Nombre d'établissements") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
@@ -195,10 +195,10 @@ barplot <- ggplot(nbFormationsParRegion, aes(x = région, y = nb_formations)) +
 print(barplot)
 ```
 
-La taille de la région a une influence directe sur le nombre d'établissements présents dans cette région.
+La taille de la population de la région a une influence directe sur le nombre d'établissements présents dans cette région.
 En moyenne, en France métropolitaine, le nombre d'établissements est supérieur à la moyenne avec en tête de classement la région d'Ile de France et celle d'Auvergne-Rhône-Alpes. Par contre, dans les territoires d'outre-mer, le nombre d'établissement est significativement inférieur à la moyenne.
 
-Par contre, la taille de la région n'a pas d'influence directe sur le nombre de formations proposées dans la même région. Il y a moins de disparités entre territoires en moyenne. Par exemple, en Centre-Val de Loire, il y a très peu d'établissements par rapport à la moyenne mais il y a un bon taux de couverture des formations proposées par rapport à la moyenne en France.
+Par contre, la région n'a pas d'influence directe sur le nombre de formations qui y sont proposées. Il y a moins de disparités entre territoires en moyenne. Par exemple, en Centre-Val de Loire, il y a très peu d'établissements par rapport à la moyenne mais il y a un bon taux de couverture des formations proposées par rapport à la moyenne en France.
 
 ```{r, echo=FALSE}
 
@@ -352,9 +352,12 @@ effectif_formation %>% ggplot() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
  
 
+  # Effectif des BTS et des Licences par statut d'établissement
+ df %>% group_by((statut)) %>% dplyr::filter(diplôme == "Licence" | diplôme == "Licence_Las" | diplôme=="PASS" | diplôme == "BTS") %>% summarize(formationsBTSLicence = sum(n()))
+   
 ```
 
-Nous pouvons constater que les deux formations les plus proposées sont le BTS et la licence , ces dernières sont pour la majorité des formations se trouvant dans des établissements publics. Dans la figure 2 , on remarque aussi que c'est en BTS et en Licence que les candidats postulent le plus. Donc les établissements publics attirent plus d'étudiants que les établissements privés.
+Nous pouvons constater que les deux formations les plus proposées sont le BTS et la licence , ces dernières sont pour la majorité des formations se trouvant dans des établissements publics. Dans la figure 2 , on remarque aussi que c'est en BTS et en Licence que les candidats postulent le plus. C'est donc pour cela que les établissements publics attirent plus d'étudiants que les établissements privés.
 
 Par ailleurs, les étudiants semblent privilégier la licence au BTS, marquant ainsi leur intérêt pour la poursuite d'études, comme un master, dans un cadre plus académique et théorique. Contrairement au BTS, qui est une formation professionnalisante visant une insertion rapide sur le marché du travail après l'obtention du diplôme, la licence semble ouvrir la voie vers des études supérieures plus approfondies.
 
@@ -461,7 +464,7 @@ A partir de notre jeu de données, on ne peut donc pas déterminer si le genre a
 
 Les conclusions qu'on peut tirer de cette étude sont les suivantes :
 
--  La taille de la région semble avoir une influence directe sur le nombre d'établissements présents dans cette région, mais pas sur le nombre de formations proposées
+-  La taille de la population d'une région semble avoir une influence directe sur le nombre d'établissements présents dans cette région, mais pas sur le nombre de formations proposées par région.
 
 - Le statut de l'établissement (public ou privé) n'a pas d'influence directe sur le taux de remplissage de l'établissement.
 
@@ -469,9 +472,13 @@ Les conclusions qu'on peut tirer de cette étude sont les suivantes :
 
 - Le type de bac a un impact sur le choix de la formation des candidats en licence.
 
-- Le genre n'a pas d'impact sur les admissions ni les candidatures en licence.
+- Le genre n'a pas d'impact sur les admissions ni sur les candidatures en licence.
 
 
 
 # Références
 https://www.studyrama.com/formations/diplomes/bac
+
+https://www.data.gouv.fr/fr/datasets/r/1d916b7c-bd4c-4951-845a-70f7ad7c17db
+
+https://www.data.gouv.fr/fr/datasets/r/98a7a1e5-64e8-4098-9180-ee4adc451896
