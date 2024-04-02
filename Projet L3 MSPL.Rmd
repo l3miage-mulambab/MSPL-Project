@@ -36,85 +36,302 @@ colnames(df) <- c(
     "nom de la formation",
     "capacité accueil",
     "candidatures",
-    "candidatures filles",
-    "candidatures phase principale",
-    "candidatures phase pr bac gen",
-    "candidatures phase pr bac tech",
-    "candidatures phase pr bac pro",
-    "candidatures phase pr bac autres spé",
-    "candidatures phase complémentaire",
-    "candidatures phase comp gen",
-    "candidatures phase comp tech",
-    "candidatures phase comp pro",
-    "candidatures phase comp bac autres spé",
-    "candidatures préselectionnés",
-    "candidatures admis",
+    "candidats filles",
+    "candidats phase principale",
+    "candidats phase pr bac gen",
+    "candidats phase pr bac tech",
+    "candidats phase pr bac pro",
+    "candidats phase pr bac autres spé",
+    "candidats phase complémentaire",
+    "candidats phase comp gen",
+    "candidats phase comp tech",
+    "candidats phase comp pro",
+    "candidats phase comp bac autres spé",
+    "candidats préselectionnés",
+    "candidats admis",
     "pourcentage filles admises"
 )
 
+df <- df %>%
+  mutate(`candidates admises` = round(`candidats admis` * (100 - `pourcentage filles admises`) / 100))
+
+df <- df %>%
+  select(-`pourcentage filles admises`)
+
+df <- df %>%
+  mutate(statut = if_else(statut %in% 
+  c("Privé enseignement supérieur", "Privé hors contrat", "Privé sous contrat d'association"), "Privé", "Public"))
+
+```
+
+```{r}
+# ---------------------------------------------------------- A RETENIR ----------------------------------------------------------
+
+# Nombre d'établissements par région
+nbEtablissementsParRegion <- df %>%
+  group_by(région) %>%
+  summarise(nb_etablissements = n_distinct(`nom établissement`)) %>%
+  arrange(desc(nb_etablissements))
+
+moyenneNbEtab <- mean(nbEtablissementsParRegion$nb_etablissements)
+
+# Graphe à faire ...
+barplot <- ggplot(nbEtablissementsParRegion, aes(x = région, y = nb_etablissements)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "blue") +
+  geom_hline(yintercept = moyenneNbEtab, color = "red", linetype = "dashed") +
+  annotate("text", x = 13, y = moyenneNbEtab, label = paste("μ =", round(moyenneNbEtab)), vjust = -1, color = "red") +
+  labs(title = "Nombre d'établissements d'enseignement supérieur par région en France",
+       x = "Région", y = "Nombre de formations") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+# Afficher le diagramme à barres
+print(barplot)
+
+```
+
+```{r}
+# ---------------------------------------------------------- A RETENIR ----------------------------------------------------------
 
 
-# data %>% head(10) # Shows the 10 first lines of this data set
-# candidatures <- df %>%
-#  group_by(région) %>%
- # summarise(candidats_total = sum(candidats), candidats_admis = sum(`candidats admis`))%>%
-  #          arrange(desc(candidats_total))
+# Nombre de noms de formation par région
+nbFormationsParRegion <- df %>%
+  group_by(région) %>%
+  summarize(nb_formations = n_distinct(`nom de la formation`))%>%
+  ungroup()
 
-#pourcentage_admission <- candidatures %>%
- # mutate(pourcentage = candidats_admis / candidats_total * 100)
+moyenneNbForm <- mean(nbFormationsParRegion$nb_formations)
 
+# Représentation graphique
+barplot <- ggplot(nbFormationsParRegion, aes(x = région, y = nb_formations)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "blue") +
+  geom_hline(yintercept = moyenneNbForm, color = "red", linetype = "dashed") +
+  annotate("text", x = 13, y = moyenneNbForm, label = paste("μ =", round(moyenneNbForm)), vjust = -1, color = "red") +
+  labs(title = "Nombre de formations proposées par région",
+       x = "Région",
+       y = "Nombre de formations") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-#candidatures_par_region <- df %>%
- # group_by(région) %>%
-  #summarise(candidats_total = sum(candidats))%>%
-   #         arrange(desc(candidats_total))
+# Afficher le diagramme à barres
+print(barplot)
+```
+```{r}
+# ---------------------------------------------------------- A RETENIR ----------------------------------------------------------
 
-#admissions_par_region <- df %>%
- # group_by(région) %>%
-  # summarise(candidats_admis = sum(`candidats admis`))%>%
-    #        arrange(desc(candidats_admis))
+# Ratio formation sélective sur non sélective
+formationParSelectivite <- df %>%
+  group_by(selectivité) %>%
+  summarize(nb_occurences = n()) %>%
+  mutate(pourcentage = (nb_occurences / sum(nb_occurences)) * 100)
+print(formationParSelectivite)
 
+# Formation sélective et non sélective par région
+formationParSelectiviteParRegion <- df %>%
+  group_by(selectivité, région) %>%
+  summarize(nb_occurences = n())
 
-#merged_data <- merge(candidatures_par_region, admissions_par_region, by = "région")
+formationParSelectiviteParRegion <- formationParSelectiviteParRegion %>%
+  group_by(région) %>%
+  mutate(total = sum(nb_occurences)) %>%
+  ungroup()
 
+# Création d'une colonne pour le calcul des pourcentages
+formationParSelectiviteParRegion <- formationParSelectiviteParRegion %>%
+  mutate(percentage = (nb_occurences / total) * 100) %>%
+  arrange(desc(total), desc(nb_occurences))
 
-# print(candidatures_par_region)
-# print(admissions_par_region)
-# print(pourcentage_admission)
+print(formationParSelectiviteParRegion)
 
+# Diagramme en barres avec remplissage selon selectivité
+barplot <- ggplot(formationParSelectiviteParRegion, aes(x = région, y = percentage, fill = selectivité)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("skyblue", "salmon")) +
+  labs(title = "Pourcentage de formations sélectives par région",
+       x = "Région",
+       y = "Pourcentage",
+       fill = "Sélectivité") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-# Graphique pour la répartition des candidatures par région
-# ggplot(candidatures_par_region, aes(x = région, y = candidats_total)) +
-  # geom_bar(stat = "identity", fill = "skyblue", alpha = 0.7) +
-  # labs(title = "Répartition des candidatures par région",
-   #    x = "Région",
-    #   y = "Nombre de candidats") +
-  # theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-# Graphique pour la répartition des admissions par région
-#ggplot(admissions_par_region, aes(x = région, y = candidats_admis)) +
- # geom_bar(stat = "identity", fill = "orange", alpha = 0.7) +
-  #labs(title = "Répartition des admissions par région",
-   #    x = "Région",
-    #   y = "Nombre de candidats admis") +
-  # theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-# Graphique des admissions en fonction des candidatures
-# ggplot(merged_data, aes(x = région)) +
-  # geom_bar(aes(y = candidats_total), stat = "identity", fill = "skyblue", alpha = 0.7, position = "dodge") +
-  # geom_bar(aes(y = candidats_admis), stat = "identity", fill = "orange", alpha = 0.7, position = "dodge") +
-  # labs(title = "Répartition des candidatures et des admissions par région",
-    #   x = "Région",
-     #  y = "Nombre de candidatures/admissions") +
- # theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-# Graphique pour la répartition des admissions par région
-# ggplot(pourcentage_admission, aes(x = région, y = candidats_admis)) +
-  # geom_bar(stat = "identity", fill = "orange", alpha = 0.7) +
-  # labs(title = "Répartition des admissions par région",
-    #   x = "Région",
-     #  y = "Nombre de candidats admis") +
- # theme(axis.text.x = element_text(angle = 90, hjust = 1))
+print(barplot)
 
 
 ```
+
+```{r}
+
+# ---------------------------------------------------------- A RETENIR ----------------------------------------------------------
+
+# Où se trouvent la différence entre les form select et non select ??
+
+# Ratio moyen nombre d'acceptations/capacité d'accueil (en %)
+
+tauxRemplissageParSelectivite <- df %>%
+  group_by(selectivité) %>%
+  summarize(nb_acceptations = sum(`candidats admis`), capaAccueil = sum(`capacité accueil`)) %>%
+  mutate(pourcentage = (nb_acceptations/capaAccueil) * 100)
+
+# Graphe pour moyenne des ratios
+
+barplot <- ggplot(tauxRemplissageParSelectivite, aes(x = selectivité)) +
+  geom_bar(aes(y = 100, fill = "Capacité d'accueil"), stat = "identity", position = "dodge") +
+  geom_bar(aes(y = pourcentage, fill = "Nombre d'admissions"), stat = "identity", position = "dodge") +
+  geom_text(aes(y = (0 + pourcentage) / 2, label = paste0(round(pourcentage, 1), "%")), 
+            vjust = 0.5, position = position_dodge(width = 0.9)) +
+  scale_fill_manual(values = c("Capacité d'accueil" = "skyblue", "Nombre d'admissions" = "salmon")) +
+  labs(title = "Ratio nombre d'admissions/capacité d'accueil selon la sélectivité",
+       x = "Sélectivité",
+       y = "Pourcentage",
+       fill = "") +
+  theme_minimal()
+
+print(barplot)
+
+# Idée de graphe : lien entre capacité d'accueil, nombre d'acceptation et selectivité
+
+
+```
+
+```{r}
+# CONTRIBUTION DE HAMZA
+
+# ---------------------------------------------------------- A RETENIR ----------------------------------------------------------
+
+# EFFECTIF DES FORMATIONS PROPOSe PAR TYPE DE DIPLOME 
+ #chaque formation représente une ligne, donc on a compter le NB d'observation(formation) par diplôme
+ effectif_formation <- df %>% group_by(diplôme) %>% summarize(formation = n()) %>% arrange(desc(formation));
+
+effectif_formation %>% ggplot() +
+  aes(x = diplôme, y = formation) +
+  geom_bar(stat = "identity",fill="lightblue") + 
+  labs(x = "Nom du diplôme",
+       y = "Effectif des formations",
+       title = "Effectif des formations proposés par type de diplôme") +
+  # Pour créer une échelle de 500 dans l'axe Y
+  scale_y_continuous(limits = c(0, 5500), breaks = seq(0, 5500, by = 500)) + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+```{r}
+# ---------------------------------------------------------- A RETENIR ----------------------------------------------------------
+
+```
+
+```{r}
+# ---------------------------------------------------------- A RETENIR ----------------------------------------------------------
+
+#calcule de nombre de candidatures par type de diplôme (BUT , BTS , Licence ....)
+candidatures <- df %>% group_by(diplôme) %>% summarize(
+  #les candidatures totales pour chaque diplôme
+  Total_Candidats = sum(`candidatures`),
+  
+  Bac_General = sum(`candidats phase pr bac gen`,`candidats phase comp gen`),
+  Bac_Technique = sum(`candidats phase pr bac tech`,`candidats phase comp tech`),
+  Bac_Professionnel = sum(`candidats phase pr bac pro`,`candidats phase comp pro`),
+  Bac_Autre = sum(`candidats phase pr bac autres spé`,`candidats phase comp bac autres spé`),
+  
+) %>% arrange(desc(Total_Candidats)) 
+
+#GGPLOT 
+ggplot(candidatures) + 
+  aes(x=diplôme,y=Total_Candidats) + geom_bar(stat = "identity",fill="brown3") + 
+  labs(y = "Nombre de candidatures",
+       title = "Effectif des candidatures par diplôme")  +
+  # scale_y_continuous(limits = c(0, 3000000), breaks = seq(0, 3000000, by = 500000)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  
+```
+
+```{r}
+# ---------------------------------------------------------- A RETENIR ----------------------------------------------------------
+
+# version pourcentages 
+prc_candidatures <- candidatures %>%
+  mutate(
+    Prc_Bac_General = (Bac_General / Total_Candidats) * 100,
+    Prc_Bac_Technique = (Bac_Technique / Total_Candidats) * 100,
+    Prc_Bac_Professionnel = (Bac_Professionnel / Total_Candidats) * 100,
+    Prc_Bac_Autre = (Bac_Autre / Total_Candidats) * 100
+  ) %>% 
+  select(-Total_Candidats, -Bac_General, -Bac_Technique, -Bac_Professionnel, -Bac_Autre)
+
+# Nous allons d'abord filtrer pour le diplôme "Licence"
+df_licence <- prc_candidatures %>% 
+  filter(diplôme == "Licence") %>%
+  pivot_longer(
+    cols = -diplôme, 
+    names_to = "Type_de_Bac", 
+    values_to = "Pourcentage"
+  )
+
+# Création du diagramme en camembert pour "Licence"
+ggplot(df_licence, aes(x = "", y = Pourcentage, fill = Type_de_Bac)) +
+  geom_bar(stat = "identity", width = 1) +
+ geom_text(aes(label = paste0(round(Pourcentage,0), "%")), position = position_stack(vjust = 0.5)) + 
+  labs(title="Répartition des candidats en Licence par Type de Bac") +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  labs(fill = "Type de Bac") +
+  theme(legend.position = "right")
+```
+
+```{r}
+# ---------------------------------------------------------- A RETENIR ----------------------------------------------------------
+
+# nombre de candidats par filière de Licence
+
+Candidats_Licence <- df %>% filter(diplôme == "Licence" | diplôme == "Licence_Las" | diplôme=="PASS") %>% 
+  group_by(filière) %>% summarise(
+  
+  # calcul candidatures
+  candidats_filles = sum(`candidats filles`),
+  candidats_garçon = sum(candidatures) - sum(`candidats filles`),
+  total_candidatures = candidats_filles + candidats_garçon,
+  
+  # calcul admissions
+  filles_admises = sum(`candidates admises`),
+  garçon_admis = sum(`candidats admis`) - sum(`candidates admises`),
+  total_admissions = filles_admises + garçon_admis) %>% 
+  arrange(desc(`candidats_filles`)) %>%  head(5)
+
+# Transformation des données en format long avec pivot_longer
+df_long <- Candidats_Licence %>%
+  pivot_longer(cols = starts_with("candidats"),
+               names_to = "genre",
+               values_to = "nombre",
+               names_prefix = "candidats_") # enlève le préfixe 'candidats_' dans le nom des colonnes
+
+#GGPLOT POUR LES CANDIDATURES PAR FILIERE 
+ggplot(df_long, aes(x = filière, y = nombre, fill = genre)) +
+  labs(title="Nombre de candidatures par filière de la Licence") +
+  geom_bar(stat = "identity", position = position_dodge()) + 
+  scale_y_continuous(limits = c(0, 1200000), breaks = seq(0, 1200000, by = 150000)) +
+  labs(x = "Spécialité", y = "Nombre de candidatures", fill = "Genre") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  coord_flip()
+
+#GGPLOT POUR LES ADMISSIONS
+df_long_admis <- Candidats_Licence %>%
+pivot_longer(cols = c(filles_admises, garçon_admis), 
+             names_to = "genre",
+             values_to = "nombre")
+
+# Créer le graphique en barres groupées pour les données d'admission
+ggplot(df_long_admis, aes(x = filière, y = nombre, fill = genre)) +
+  labs(title="Nombre d'admissions par filière de Licence") +
+  geom_bar(stat = "identity", position = position_dodge())  +
+  labs(x = "Spécialité", y = "Nombre d'admissions", fill = "Genre") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  coord_flip()
+```
+
+```{r}
+# ---------------------------------------------------------- A RETENIR ----------------------------------------------------------
+
+```
+
